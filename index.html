@@ -90,36 +90,42 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .pkm{padding:0 13px 14px;display:none}
 .card.filled .pkm{display:block}
 .card.filled .card-search{display:none}
-.pkm-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 0 11px;border-bottom:1px solid var(--edge);margin-bottom:12px}
+.pkm-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 9px;border-bottom:1px solid var(--edge);margin-bottom:9px}
 .pkm-name{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.03em;line-height:1}
 .pkm-name .clear{font-size:15px;color:var(--ink-faint);cursor:pointer;margin-left:8px;font-family:var(--font-body)}
 .pkm-name .clear:hover{color:var(--enemy)}
 .types{display:flex;gap:5px}
 .chip{font-family:var(--font-display);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
 
-.section-t{font-family:var(--font-display);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin:13px 0 7px;font-weight:600}
-.moves{display:flex;flex-direction:column;gap:5px}
-.move{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--edge);border-radius:6px;padding:7px 10px;font-size:13.5px}
-.move .mtype{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.move .mname{flex:1}
-.move .mtag{font-family:var(--font-display);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+.section-t{font-family:var(--font-display);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin:11px 0 6px;font-weight:600}
+.moves{display:flex;flex-wrap:wrap;gap:5px}
+.move{display:flex;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--edge);border-radius:20px;padding:4px 10px 4px 8px;font-size:12.5px;line-height:1.1;white-space:nowrap}
+.move .mtype{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.move .mname{font-weight:500}
+/* move pill tinted subtly by its type via inline border color */
+.move.status{opacity:.82}
 
-.lookout{background:var(--enemy-glow);border:1px solid rgba(208,69,90,.35);border-radius:7px;padding:9px 11px;margin-top:12px}
-.lookout .lo-t{font-family:var(--font-display);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--enemy);font-weight:700;margin-bottom:3px}
-.lookout .lo-v{font-size:14px;font-weight:600;color:#ffd0d6}
+.lookout{background:var(--enemy-glow);border:1px solid rgba(208,69,90,.35);border-radius:7px;padding:8px 11px;margin-top:11px}
+.lookout .lo-t{font-family:var(--font-display);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--enemy);font-weight:700;margin-bottom:2px}
+.lookout .lo-v{font-size:13.5px;font-weight:600;color:#ffd0d6;line-height:1.3}
 
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
-.meta .m{background:var(--panel-2);border:1px solid var(--edge);border-radius:6px;padding:7px 9px}
-.meta .m .k{font-family:var(--font-display);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
-.meta .m .v{font-size:12.5px;margin-top:2px;color:var(--ink);line-height:1.35}
-.meta .m.wide{grid-column:1/-1}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:5px 8px;margin-top:11px;align-items:baseline}
+.meta .m{display:contents}
+.meta .m .k{font-family:var(--font-display);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;white-space:nowrap;padding-top:1px}
+.meta .m .v{font-size:12.5px;color:var(--ink);line-height:1.3}
+.meta .m.wide .k,.meta .m.wide .v{grid-column:auto}
 .speed-badge{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--gold)}
+/* inline speed+items row to save vertical space */
+.metatop{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.metatop .box{background:var(--panel-2);border:1px solid var(--edge);border-radius:7px;padding:7px 9px}
+.metatop .box .k{font-family:var(--font-display);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+.metatop .box .v{font-size:12.5px;margin-top:2px;line-height:1.3}
 
 /* weaknesses */
-.weakbox{margin-top:12px}
-.weakrow{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
-.wk{font-family:var(--font-display);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:3px 7px;border-radius:5px;display:flex;align-items:center;gap:5px;color:#fff}
-.wk .mult{font-size:9px;opacity:.85;background:rgba(0,0,0,.28);padding:1px 4px;border-radius:3px}
+.weakbox{margin-top:10px}
+.weakrow{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.wk{font-family:var(--font-display);font-weight:600;font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:4px;display:flex;align-items:center;gap:4px;color:#fff}
+.wk .mult{font-size:8.5px;opacity:.85;background:rgba(0,0,0,.28);padding:1px 3px;border-radius:3px}
 
 .empty-hint{font-size:12px;color:var(--ink-faint);text-align:center;padding:10px 0 4px;font-style:italic}
 
@@ -270,10 +276,10 @@ function movesHTML(moves){
   if(!moves.length)return '';
   return `<div class="section-t">Moves</div><div class="moves">${moves.map(m=>{
     const cleanName=m.replace(/\s*\(\d+%\)\s*$/,'');
-    const pct=(m.match(/\((\d+%)\)/)||[])[1]||'';
     const t=moveType(m);
-    const dot=t?`<span class="mtype" style="background:${TYPE_COLORS[t]}"></span>`:`<span class="mtype" style="background:#333"></span>`;
-    return `<div class="move">${dot}<span class="mname">${cleanName}</span><span class="mtag">${pct||t||''}</span></div>`;
+    const col=t?TYPE_COLORS[t]:'#444';
+    const dot=`<span class="mtype" style="background:${col}"></span>`;
+    return `<div class="move" style="border-color:${col}55" title="${t||''}">${dot}<span class="mname">${cleanName}</span></div>`;
   }).join('')}</div>`;
 }
 function weakHTML(types){
@@ -307,12 +313,16 @@ function cardBodyEnemy(p){
   let h=`<div class="pkm-head"><div class="pkm-name">${p.name}<span class="clear" data-clear="1">&times;</span></div>${typeChips(p.types)}</div>`;
   if(p.lookout)h+=`<div class="lookout"><div class="lo-t">Look Out For</div><div class="lo-v">${p.lookout}</div></div>`;
   h+=movesHTML(p.moves);
+  // top row: speed + items side by side (most-glanced info)
+  h+='<div class="metatop">';
+  h+=`<div class="box"><div class="k">Base Speed</div><div class="v"><span class="speed-badge">${p.speed||'&mdash;'}</span></div></div>`;
+  h+=`<div class="box"><div class="k">Items</div><div class="v">${p.items.length?p.items.join(', '):'&mdash;'}</div></div>`;
+  h+='</div>';
+  // tight label|value grid for the rest
   h+='<div class="meta">';
-  if(p.speed)h+=`<div class="m"><div class="k">Base Speed</div><div class="v"><span class="speed-badge">${p.speed}</span></div></div>`;
-  if(p.items.length)h+=`<div class="m"><div class="k">Items</div><div class="v">${p.items.join('<br>')}</div></div>`;
-  if(p.natures.length)h+=`<div class="m wide"><div class="k">Nature</div><div class="v">${p.natures.join(' &middot; ')}</div></div>`;
-  if(p.ivs)h+=`<div class="m wide"><div class="k">IVs</div><div class="v">${p.ivs}</div></div>`;
-  if(p.ability)h+=`<div class="m wide"><div class="k">Ability</div><div class="v">${p.ability}</div></div>`;
+  if(p.natures.length)h+=`<div class="m"><div class="k">Nature</div><div class="v">${p.natures.join(' &middot; ')}</div></div>`;
+  if(p.ivs)h+=`<div class="m"><div class="k">IVs</div><div class="v">${p.ivs}</div></div>`;
+  if(p.ability)h+=`<div class="m"><div class="k">Ability</div><div class="v">${p.ability}</div></div>`;
   h+='</div>';
   return h;
 }
@@ -320,7 +330,10 @@ function cardBodyAlly(p){
   let h=`<div class="pkm-head"><div class="pkm-name">${p.name}<span class="clear" data-clear="1">&times;</span></div>${typeChips(p.types)}</div>`;
   h+=weakHTML(p.types);
   h+=movesHTML(p.moves);
-  if(p.speed)h+=`<div class="meta"><div class="m"><div class="k">Base Speed</div><div class="v"><span class="speed-badge">${p.speed}</span></div></div>${p.items.length?`<div class="m"><div class="k">Items</div><div class="v">${p.items.join('<br>')}</div></div>`:''}</div>`;
+  h+='<div class="metatop">';
+  h+=`<div class="box"><div class="k">Base Speed</div><div class="v"><span class="speed-badge">${p.speed||'&mdash;'}</span></div></div>`;
+  h+=`<div class="box"><div class="k">Items</div><div class="v">${p.items.length?p.items.join(', '):'&mdash;'}</div></div>`;
+  h+='</div>';
   return h;
 }
 function cardBodyBench(p){
