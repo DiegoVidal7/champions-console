@@ -90,12 +90,12 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .pkm{padding:0 13px 14px;display:none}
 .card.filled .pkm{display:block}
 .card.filled .card-search{display:none}
-.pkm-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 9px;border-bottom:1px solid var(--edge);margin-bottom:9px}
-.pkm-name{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.03em;line-height:1}
+.pkm-head{display:flex;align-items:center;justify-content:space-between;gap:8px 10px;padding:12px 0 9px;border-bottom:1px solid var(--edge);margin-bottom:9px;flex-wrap:wrap}
+.pkm-name{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.03em;line-height:1;flex:1 1 auto;min-width:0}
 .pkm-name .clear{font-size:15px;color:var(--ink-faint);cursor:pointer;margin-left:8px;font-family:var(--font-body)}
 .pkm-name .clear:hover{color:var(--enemy)}
-.types{display:flex;gap:5px}
-.chip{font-family:var(--font-display);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.types{display:flex;gap:5px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
+.chip{font-family:var(--font-display);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);white-space:nowrap}
 
 .section-t{font-family:var(--font-display);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin:11px 0 6px;font-weight:600}
 .moves{display:flex;flex-wrap:wrap;gap:5px}
@@ -131,6 +131,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 
 /* Ally mini card (compact) */
 .card.ally .pkm-name{font-size:17px}
+.card:not(.big) .pkm-name{font-size:16px}
+.card:not(.big) .chip{font-size:10px;padding:2px 7px}
 .card.ally.big{min-height:auto}
 
 .loading-veil{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:100;transition:opacity .4s}
