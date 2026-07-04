@@ -4,6 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vidalero's Battle Console</title>
+<link id="favicon" rel="icon" type="image/png" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/135.png">
+<script>
+// Favicon fallback: if the PokeAPI Jolteon sprite fails to load, swap to an alternate host.
+(function(){
+  var test=new Image();
+  test.onload=function(){ if(test.naturalWidth===0) swap(); };
+  test.onerror=swap;
+  test.src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/135.png";
+  function swap(){
+    var f=document.getElementById('favicon');
+    if(f)f.href="https://img.pokemondb.net/sprites/home/normal/jolteon.png";
+  }
+})();
+</script>
 <style>
 :root{
   --bg:#0a0e14;
@@ -133,6 +147,24 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .pkm-head{display:flex;align-items:center;justify-content:space-between;gap:8px 10px;padding:12px 0 9px;border-bottom:1px solid var(--edge);margin-bottom:9px;flex-wrap:wrap}
 .pkm-name{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.03em;line-height:1;flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px}
 .pkm-sprite{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+
+/* my-active selection highlight */
+.card.ally{cursor:pointer;transition:.15s}
+.card.ally.myactive{box-shadow:0 0 0 2px var(--ally),0 8px 30px -10px var(--ally-glow)}
+.card.ally.myactive::before{content:"ACTIVE";position:absolute;top:8px;right:10px;z-index:5;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:.14em;color:#fff;background:var(--ally);padding:2px 7px;border-radius:4px}
+
+/* threat section on opponent active cards */
+.threats{margin-top:11px;border-top:1px solid var(--edge);padding-top:9px}
+.thr-head{font-family:var(--font-display);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:7px;font-weight:600}
+.thr-row{margin-bottom:7px}
+.thr-vs{font-family:var(--font-display);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;display:block;margin-bottom:4px}
+.thr-list{display:flex;flex-wrap:wrap;gap:4px}
+.thr{font-family:var(--font-display);font-weight:600;font-size:10.5px;letter-spacing:.03em;padding:3px 8px;border-radius:5px;display:inline-flex;align-items:center;gap:4px}
+.thr.danger{background:var(--enemy-glow);color:#ffb3bf;border:1px solid rgba(208,69,90,.45)}
+.thr.good{background:rgba(65,209,127,.13);color:#7fe0a8;border:1px solid rgba(65,209,127,.4)}
+.thr.immune{background:rgba(134,149,168,.12);color:var(--ink-dim);border:1px solid var(--edge)}
+.thr.oppimmune{background:rgba(134,149,168,.12);color:var(--ink-dim);border:1px solid var(--edge)}
+.thr.even{color:var(--ink-faint);font-style:italic;font-weight:500;letter-spacing:.02em}
 .pkm-name .clear{font-size:15px;color:var(--ink-faint);cursor:pointer;margin-left:8px;font-family:var(--font-body)}
 .pkm-name .clear:hover{color:var(--enemy)}
 .types{display:flex;gap:5px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
@@ -281,6 +313,39 @@ function moveType(name){
   return MOVE_TYPES[k]||null;
 }
 
+/* ---- Threat analysis (type-effectiveness, active vs active) ---- */
+// multiplier of an attacking type vs a defender's types
+function typeMultVsDef(atkType,defTypes){
+  let m=1;
+  defTypes.forEach(d=>{const v=(CHART[atkType]&&CHART[atkType][d]!==undefined)?CHART[atkType][d]:1;m*=v;});
+  return m;
+}
+function cleanMoveName(m){return m.replace(/\s*\(\d+%\)\s*$/,'');}
+// Given attacker p and defender d, return the strongest offensive interactions.
+// Returns {superEff:[{move,type,mult}], immune:[{move,type}] } considering only damaging moves.
+function attackReads(attacker,defender){
+  const defTypes=defender.types||[];
+  const superEff=[],immune=[];
+  (attacker.moves||[]).forEach(mv=>{
+    const t=moveType(mv);
+    if(!t)return; // unknown move type -> skip
+    // skip pure status moves: those whose move name maps to a known non-damaging priority-support OR is a common status move
+    if(isStatusMove(mv))return;
+    const mult=typeMultVsDef(t,defTypes);
+    if(mult===0)immune.push({move:cleanMoveName(mv),type:t});
+    else if(mult>=2)superEff.push({move:cleanMoveName(mv),type:t,mult});
+  });
+  // keep the best (highest mult) few
+  superEff.sort((a,b)=>b.mult-a.mult);
+  return {superEff:superEff.slice(0,3),immune:immune.slice(0,2)};
+}
+// crude status-move filter: names that never deal damage (so they don't create false threat reads)
+const STATUS_MOVES=new Set(["protect","detect","spiky shield","baneful bunker","king's shield","substitute","swords dance","nasty plot","dragon dance","calm mind","bulk up","iron defense","agility","tailwind","reflect","light screen","aurora veil","trick room","rain dance","sunny day","snowscape","sandstorm","will-o-wisp","thunder wave","toxic","spore","sleep powder","stun spore","yawn","taunt","encore","fake tears","charm","screech","cotton spore","helping hand","follow me","rage powder","wide guard","quick guard","coaching","decorate","life dew","heal pulse","aromatic mist","safeguard","misty terrain","grassy terrain","electric terrain","psychic terrain","trick","switcheroo","parting shot","memento","perish song","destiny bond","roost","recover","slack off","soft-boiled","milk drink","morning sun","moonlight","synthesis","wish","stealth rock","spikes","toxic spikes","sticky web","rapid spin","defog","haze","string shot","scary face","glare","sing","hypnosis","confuse ray","leech seed","imprison","magic room","wonder room","gravity","after you","quash","ally switch","whirlwind","roar","light clay","reflect type","acupressure","cotton guard","stockpile","amnesia","barrier","stuff cheeks","strength sap","tidy up"].filter(Boolean));
+function isStatusMove(mv){
+  const k=cleanMoveName(mv).trim().toLowerCase();
+  return STATUS_MOVES.has(k);
+}
+
 /* ---- Priority moves (auto-detect) ---- */
 const PRIO_DMG={"fake out":3,"extreme speed":2,"first impression":2,"upper hand":3,"sucker punch":1,"grassy glide":1,"quick attack":1,"aqua jet":1,"bullet punch":1,"ice shard":1,"mach punch":1,"shadow sneak":1,"vacuum wave":1,"water shuriken":1,"accelerock":1,"jet punch":1};
 const PRIO_SUP={"follow me":2,"rage powder":2,"ally switch":2,"protect":4,"detect":4,"spiky shield":4,"baneful bunker":4,"king's shield":4,"quick guard":3,"wide guard":3,"helping hand":5,"endure":4,"feint":2,"baby-doll eyes":1};
@@ -381,6 +446,7 @@ const FIELD={tr:false,'tw-ally':false,'tw-enemy':false};
 const SCARF={}; // key "kind:idx" -> bool
 const PARA={};  // key "kind:idx" -> bool
 const MEGA={};  // key "kind:idx" -> bool (mega evolved)
+let MYACTIVE=[]; // indices (into MYTEAM) of my currently-active mons, max 2
 
 /* ---- Rendering helpers ---- */
 function chip(t){return `<span class="chip" style="background:${TYPE_COLORS[t]}">${t}</span>`;}
@@ -514,10 +580,46 @@ function fill(card,kind,p){
   body.innerHTML=kind==='ally'?cardBodyAlly(p):kind==='bench'?cardBodyBench(p):cardBodyEnemy(p);
   card.classList.add('filled');
   renderLadder();
+  renderThreats();
 }
 function unfill(card){card.classList.remove('filled');card.querySelector('.pkm').innerHTML='';const i=card.querySelector('input');i.value='';
   const k=card.dataset.kind+':'+card.dataset.idx;delete SCARF[k];delete PARA[k];delete MEGA[k];
-  renderLadder();}
+  renderLadder();renderThreats();}
+
+/* ---- Threat badges on opponent active cards ---- */
+function renderThreats(){
+  // clear existing threat sections on active cards
+  document.querySelectorAll('.card[data-kind="active"] .threats').forEach(el=>el.remove());
+  const myMons=MYACTIVE.map(i=>MYTEAM[i]).filter(Boolean);
+  [0,1].forEach(idx=>{
+    const card=document.querySelector(`.card[data-kind="active"][data-idx="${idx}"]`);
+    if(!card||!card.classList.contains('filled'))return;
+    const nm=SLOTS.active[idx];const opp=nm?DEXMAP[nm.toLowerCase()]:null;
+    if(!opp)return;
+    if(!myMons.length)return; // nothing to compare until you mark active mons
+    const rows=[];
+    myMons.forEach(my=>{
+      // what OPP threatens on MY mon (defense read for me) and what MY mon does to OPP (offense)
+      const oppHitsMy=attackReads(opp,my);     // opp attacking my mon
+      const myHitsOpp=attackReads(my,opp);     // my mon attacking opp
+      const parts=[];
+      // danger: opp super-effective on my mon
+      oppHitsMy.superEff.forEach(s=>parts.push(`<span class="thr danger" title="${opp.name}'s ${s.move} is ${s.mult}x on your ${my.name}">&#9888; ${s.move} ${s.mult}&times; \u2192 ${my.name}</span>`));
+      // my immunity vs opp
+      oppHitsMy.immune.forEach(s=>parts.push(`<span class="thr immune" title="Your ${my.name} is immune to ${s.type}">&#128737; ${my.name} immune to ${s.move}</span>`));
+      // good: my mon super-effective on opp
+      myHitsOpp.superEff.forEach(s=>parts.push(`<span class="thr good" title="Your ${my.name}'s ${s.move} is ${s.mult}x on ${opp.name}">&#9876; ${my.name}: ${s.move} ${s.mult}&times;</span>`));
+      // opp immune to my move
+      myHitsOpp.immune.forEach(s=>parts.push(`<span class="thr oppimmune" title="${opp.name} is immune to your ${s.move}">${opp.name} immune to ${s.move}</span>`));
+      if(parts.length)rows.push(`<div class="thr-row"><span class="thr-vs">vs ${my.name}</span><div class="thr-list">${parts.join('')}</div></div>`);
+      else rows.push(`<div class="thr-row"><span class="thr-vs">vs ${my.name}</span><div class="thr-list"><span class="thr even">even matchup</span></div></div>`);
+    });
+    const sec=document.createElement('div');
+    sec.className='threats';
+    sec.innerHTML=`<div class="thr-head">Matchup</div>${rows.join('')}`;
+    card.querySelector('.pkm').appendChild(sec);
+  });
+}
 
 /* ---- Speed Ladder ---- */
 function sideOf(kind){return kind==='ally'?'ally':'enemy';}
@@ -609,14 +711,27 @@ function renderMyTeam(){
   }
   MYTEAM.forEach((p,i)=>{
     const card=document.createElement('div');
-    card.className='card ally big filled fixed';
+    const activeCls=MYACTIVE.includes(i)?' myactive':'';
+    card.className='card ally big filled fixed'+activeCls;
     card.dataset.kind='ally';card.dataset.idx=i;
     const body=document.createElement('div');
     body.className='pkm';
     body.innerHTML=cardBodyAlly(p,true); // true = fixed (no clear button)
     card.appendChild(body);
+    // click-to-activate (ignore clicks on the sprite image drag etc.)
+    card.addEventListener('click',()=>toggleMyActive(i));
     ag.appendChild(card);
   });
+}
+function toggleMyActive(i){
+  const at=MYACTIVE.indexOf(i);
+  if(at>=0){MYACTIVE.splice(at,1);}
+  else{
+    MYACTIVE.push(i);
+    if(MYACTIVE.length>2)MYACTIVE.shift(); // keep max 2 (drop oldest)
+  }
+  renderMyTeam();
+  renderThreats();
 }
 function restoreSlots(){
   ['active','bench'].forEach(kind=>{
