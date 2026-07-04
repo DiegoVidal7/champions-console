@@ -87,6 +87,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .modbtn{font-family:var(--font-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:11px;padding:7px 12px;border-radius:6px;border:1px solid var(--edge);background:var(--panel);color:var(--ink-dim);cursor:pointer;transition:.15s}
 .modbtn:hover{border-color:var(--ink-dim);color:var(--ink)}
 .modbtn.on{background:var(--gold);border-color:var(--gold);color:#1a1205}
+.modbtn.scope{border-color:rgba(134,149,168,.4);color:var(--ink-dim)}
+.modbtn.scope.on{background:#2a3444;border-color:var(--ink-dim);color:var(--ink)}
 .modbtn.side-ally.on{background:var(--ally);border-color:var(--ally);color:#fff}
 .modbtn.side-enemy.on{background:var(--enemy);border-color:var(--enemy);color:#fff}
 .modsep{width:1px;height:20px;background:var(--edge)}
@@ -255,6 +257,8 @@ a.link{color:var(--gold);text-decoration:none}
   <div class="ladder-head">
     <div class="side-label speed">Speed Ladder <span class="count">Level 50 &middot; live order</span></div>
     <div class="mods">
+      <button class="modbtn scope" data-mod="showall" title="Toggle between active-only and the full field">Show All</button>
+      <span class="modsep"></span>
       <button class="modbtn" data-mod="tr" title="Trick Room inverts speed order">Trick Room</button>
       <span class="modsep"></span>
       <button class="modbtn side-ally" data-mod="tw-ally" title="Tailwind on your side">Tailwind &middot; You</button>
@@ -442,7 +446,7 @@ let DEXMAP={};   // lowername -> obj
 let MYTEAM=[];   // my fixed team (from MyTeam tab)
 const SLOTS={ally:new Array(6).fill(null),active:new Array(2).fill(null),bench:new Array(4).fill(null)};
 // field modifiers + per-slot scarf/paralysis (keyed by kind:idx)
-const FIELD={tr:false,'tw-ally':false,'tw-enemy':false};
+const FIELD={tr:false,'tw-ally':false,'tw-enemy':false,showall:false};
 const SCARF={}; // key "kind:idx" -> bool
 const PARA={};  // key "kind:idx" -> bool
 const MEGA={};  // key "kind:idx" -> bool (mega evolved)
@@ -640,16 +644,23 @@ function renderLadder(){
     if(PARA[key])spd=Math.floor(spd*0.5);
     entries.push({p,kind,idx,key,side,base,spd,canMega,isMega,prio:priorityOf(p)});
   };
-  // ally side: fixed MyTeam
-  MYTEAM.forEach((p,idx)=>pushEntry(p,'ally',idx));
-  // opponent side: filled search slots
-  ['active','bench'].forEach(kind=>{
+  // ally side: fixed MyTeam (active-only unless Show All)
+  MYTEAM.forEach((p,idx)=>{
+    if(!FIELD.showall && !MYACTIVE.includes(idx))return;
+    pushEntry(p,'ally',idx);
+  });
+  // opponent side: filled search slots (active-only unless Show All shows bench too)
+  const oppKinds=FIELD.showall?['active','bench']:['active'];
+  oppKinds.forEach(kind=>{
     SLOTS[kind].forEach((nm,idx)=>{
       if(!nm)return;const p=DEXMAP[nm.toLowerCase()];if(!p)return;
       pushEntry(p,kind,idx);
     });
   });
-  if(!entries.length){box.innerHTML='<div class="ladder-empty">Fill in Pok&eacute;mon to see the speed order.</div>';note.innerHTML='';return;}
+  if(!entries.length){
+    const msg=FIELD.showall?'Fill in Pok&eacute;mon to see the speed order.':'Mark your active Pok&eacute;mon (click a team card) and add opponents to see the field speed order. Or tap <b>Show All</b>.';
+    box.innerHTML=`<div class="ladder-empty">${msg}</div>`;note.innerHTML='';return;
+  }
   // sort: Trick Room inverts (slowest first)
   entries.sort((a,b)=> FIELD.tr ? a.spd-b.spd : b.spd-a.spd);
   box.innerHTML=entries.map((e,i)=>{
@@ -687,7 +698,8 @@ function renderLadder(){
     </div>`;
   }).join('');
   const trTxt=FIELD.tr?'<b style="color:var(--gold)">Trick Room active</b> \u2014 slowest moves first. ':'';
-  note.innerHTML=`${trTxt}Speeds computed at Lv50 with each Pok&eacute;mon's Speed SP and nature from your sheet. &#9889; = damaging priority move (ignores speed order). Tap Scarf/Par on any row for one-off modifiers.`;
+  const scopeTxt=FIELD.showall?'Showing <b>all revealed</b> Pok&eacute;mon. ':'Showing <b>active only</b> (your marked-active + their active). Tap <b>Show All</b> for the full field. ';
+  note.innerHTML=`${scopeTxt}${trTxt}Speeds at Lv50 from your Speed SP + nature. &#9889; = damaging priority (ignores speed). Tap Scarf/Par/Mega on a row for one-off modifiers.`;
   // wire per-row toggles
   box.querySelectorAll('[data-scarf]').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.scarf;SCARF[k]=!SCARF[k];renderLadder();}));
   box.querySelectorAll('[data-par]').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.par;PARA[k]=!PARA[k];renderLadder();}));
@@ -732,6 +744,7 @@ function toggleMyActive(i){
   }
   renderMyTeam();
   renderThreats();
+  renderLadder();
 }
 function restoreSlots(){
   ['active','bench'].forEach(kind=>{
