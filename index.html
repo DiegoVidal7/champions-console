@@ -131,7 +131,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .card.filled .pkm{display:block}
 .card.filled .card-search{display:none}
 .pkm-head{display:flex;align-items:center;justify-content:space-between;gap:8px 10px;padding:12px 0 9px;border-bottom:1px solid var(--edge);margin-bottom:9px;flex-wrap:wrap}
-.pkm-name{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.03em;line-height:1;flex:1 1 auto;min-width:0}
+.pkm-name{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.03em;line-height:1;flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px}
+.pkm-sprite{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
 .pkm-name .clear{font-size:15px;color:var(--ink-faint);cursor:pointer;margin-left:8px;font-family:var(--font-body)}
 .pkm-name .clear:hover{color:var(--enemy)}
 .types{display:flex;gap:5px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
@@ -422,6 +423,20 @@ function weakHTML(types){
   return html;
 }
 
+/* ---- Sprites (classic pixel style) ---- */
+const DEXNUM={"grimmsnarl":861,"pelipper":279,"swampert":260,"archaludon":1018,"sinistcha":1013,"metagross":376,"incineroar":727,"garchomp":445,"rillaboom":812,"sneasler":903,"kingambit":983,"basculegion":902,"floette":670,"charizard":6,"gholdengo":1000,"amoonguss":591,"landorus":645,"urshifu":892,"ogerpon":1017,"iron hands":992};
+function spriteImg(name){
+  const key=name.trim().toLowerCase();
+  const num=DEXNUM[key];
+  const byName=key.replace(/[.'\u2019]/g,'').replace(/\s+/g,'-');
+  // primary: official PokeAPI number sprite (classic pixel style); fallback: name-based CDN; then hide
+  const primary= num
+    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png`
+    : `https://img.pokemondb.net/sprites/home/normal/${byName}.png`;
+  const fallback=`https://img.pokemondb.net/sprites/home/normal/${byName}.png`;
+  return `<img class="pkm-sprite" src="${primary}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fallback}';">`;
+}
+
 function cardBodyEnemy(p){
   let h=`<div class="pkm-head"><div class="pkm-name">${p.name}<span class="clear" data-clear="1">&times;</span></div>${typeChips(p.types)}</div>`;
   if(p.lookout)h+=`<div class="lookout"><div class="lo-t">Look Out For</div><div class="lo-v">${p.lookout}</div></div>`;
@@ -441,7 +456,8 @@ function cardBodyEnemy(p){
 }
 function cardBodyAlly(p,fixed){
   const clearBtn=fixed?'':'<span class="clear" data-clear="1">&times;</span>';
-  let h=`<div class="pkm-head"><div class="pkm-name">${p.name}${clearBtn}</div>${typeChips(p.types)}</div>`;
+  const sprite=spriteImg(p.name);
+  let h=`<div class="pkm-head"><div class="pkm-name">${sprite}${p.name}${clearBtn}</div>${typeChips(p.types)}</div>`;
   h+=weakHTML(p.types);
   h+=movesHTML(p.moves);
   h+='<div class="metatop">';
