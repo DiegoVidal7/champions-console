@@ -64,6 +64,46 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 
 .bench-head{font-family:var(--font-display);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin:4px 0 12px;font-weight:600}
 
+/* Speed Ladder */
+#speedPanel{margin-top:30px;border-top:1px solid var(--edge);padding-top:22px}
+.side-label.speed{color:var(--gold)}
+.ladder-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.ladder-head .side-label{margin-bottom:0}
+.mods{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.modbtn{font-family:var(--font-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:11px;padding:7px 12px;border-radius:6px;border:1px solid var(--edge);background:var(--panel);color:var(--ink-dim);cursor:pointer;transition:.15s}
+.modbtn:hover{border-color:var(--ink-dim);color:var(--ink)}
+.modbtn.on{background:var(--gold);border-color:var(--gold);color:#1a1205}
+.modbtn.side-ally.on{background:var(--ally);border-color:var(--ally);color:#fff}
+.modbtn.side-enemy.on{background:var(--enemy);border-color:var(--enemy);color:#fff}
+.modsep{width:1px;height:20px;background:var(--edge)}
+.ladder{display:flex;flex-direction:column;gap:6px}
+.lad-row{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:12px;padding:9px 14px;border-radius:9px;border:1px solid var(--edge);background:var(--panel);position:relative;overflow:hidden}
+.lad-row.ally{border-left:3px solid var(--ally)}
+.lad-row.enemy{border-left:3px solid var(--enemy)}
+.lad-rank{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink-faint);text-align:center}
+.lad-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lad-name{font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:.02em}
+.lad-badges{display:flex;gap:5px;flex-wrap:wrap}
+.pbadge{font-family:var(--font-display);font-weight:600;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:4px}
+.pbadge.dmg{background:rgba(230,180,80,.16);color:var(--gold);border:1px solid rgba(230,180,80,.4)}
+.pbadge.sup{background:rgba(134,149,168,.12);color:var(--ink-dim);border:1px solid var(--edge)}
+.lad-spd{display:flex;align-items:baseline;gap:7px}
+.lad-num{font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--ink)}
+.lad-row.ally .lad-num{color:#7fb3f5}
+.lad-row.enemy .lad-num{color:#f58aa0}
+.lad-sub{font-size:10px;color:var(--ink-faint);font-family:var(--font-display);letter-spacing:.06em;text-transform:uppercase}
+.lad-scarf{font-size:9px;color:var(--gold);cursor:pointer;border:1px solid rgba(230,180,80,.3);border-radius:4px;padding:1px 5px;font-family:var(--font-display);letter-spacing:.05em;text-transform:uppercase;user-select:none}
+.lad-scarf.on{background:var(--gold);color:#1a1205}
+.lad-par{font-size:9px;color:#c9a0e0;cursor:pointer;border:1px solid var(--edge);border-radius:4px;padding:1px 5px;font-family:var(--font-display);letter-spacing:.05em;text-transform:uppercase;user-select:none}
+.lad-par.on{background:#a040a0;color:#fff;border-color:#a040a0}
+.lad-mega{font-size:9px;color:var(--gold);cursor:pointer;border:1px solid rgba(230,180,80,.4);border-radius:4px;padding:1px 5px;font-family:var(--font-display);letter-spacing:.05em;text-transform:uppercase;user-select:none;font-weight:600}
+.lad-mega.on{background:linear-gradient(135deg,#e6b450,#c88a2a);color:#1a1205;border-color:#e6b450}
+.lad-tools{display:flex;gap:5px;align-items:center}
+.ladder-empty{text-align:center;color:var(--ink-faint);font-style:italic;padding:18px 0;font-size:13px}
+.ladder-note{margin-top:10px;font-size:11px;color:var(--ink-faint);line-height:1.5}
+.speedline{height:1px;background:repeating-linear-gradient(90deg,var(--edge) 0 8px,transparent 8px 14px);margin:2px 0;position:relative}
+.speedline span{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--bg);padding:0 8px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-family:var(--font-display)}
+
 /* Card */
 .card{background:var(--panel);border:1px solid var(--edge);border-radius:11px;overflow:hidden;position:relative;transition:.18s}
 .card.ally{border-left:3px solid var(--ally)}
@@ -156,8 +196,7 @@ a.link{color:var(--gold);text-decoration:none}
   </div>
   <div class="status">
     <span id="syncStat"><span class="dot" id="syncDot"></span><span id="syncTxt">connecting</span></span>
-    <button class="btn ghost" id="saveBtn" title="Copy a code that restores your team">Save Team</button>
-    <button class="btn ghost" id="loadBtn">Load Team</button>
+    <button class="btn ghost" id="refreshBtn" title="Reload latest data from your sheet">Refresh</button>
     <button class="btn reset" id="resetBtn">Reset Opponent</button>
   </div>
 </header>
@@ -165,7 +204,7 @@ a.link{color:var(--gold);text-decoration:none}
 <div class="field">
   <!-- ALLY SIDE -->
   <section>
-    <div class="side-label ally">Your Team <span class="count">6 slots &middot; persists</span></div>
+    <div class="side-label ally">Your Team <span class="count">from MyTeam tab</span></div>
     <div class="slot-grid ally-grid" id="allyGrid"></div>
   </section>
 
@@ -178,6 +217,22 @@ a.link{color:var(--gold);text-decoration:none}
   </section>
 </div>
 
+<!-- SPEED LADDER -->
+<section id="speedPanel">
+  <div class="ladder-head">
+    <div class="side-label speed">Speed Ladder <span class="count">Level 50 &middot; live order</span></div>
+    <div class="mods">
+      <button class="modbtn" data-mod="tr" title="Trick Room inverts speed order">Trick Room</button>
+      <span class="modsep"></span>
+      <button class="modbtn side-ally" data-mod="tw-ally" title="Tailwind on your side">Tailwind &middot; You</button>
+      <button class="modbtn side-enemy" data-mod="tw-enemy" title="Tailwind on opponent side">Tailwind &middot; Opp</button>
+    </div>
+  </div>
+  <div id="ladder" class="ladder"></div>
+  <div class="ladder-note" id="ladderNote"></div>
+</section>
+</div>
+
 <footer>
   <span>Data source: live Google Sheet (WebData tab). Edit the sheet, refresh to update.</span>
   <span id="countTxt"></span>
@@ -188,6 +243,7 @@ a.link{color:var(--gold);text-decoration:none}
 const MOVE_TYPES={"accelerock":"Rock","acid armor":"Poison","acid spray":"Poison","acrobatics":"Flying","acupressure":"Normal","aerial ace":"Flying","after you":"Normal","agility":"Psychic","air cutter":"Flying","air slash":"Flying","alluring voice":"Fairy","ally switch":"Psychic","amnesia":"Psychic","ancient power":"Rock","apple acid":"Grass","aqua cutter":"Water","aqua jet":"Water","aqua ring":"Water","aqua step":"Water","aqua tail":"Water","armor cannon":"Fire","aromatic mist":"Fairy","assurance":"Dark","attract":"Normal","aura sphere":"Fighting","aura wheel":"Electric","aurora veil":"Ice","avalanche":"Ice","axe kick":"Fighting","baby-doll eyes":"Fairy","baneful bunker":"Poison","barb barrage":"Poison","baton pass":"Normal","beak blast":"Flying","beat up":"Dark","belch":"Poison","belly drum":"Normal","bind":"Normal","bite":"Dark","bitter blade":"Fire","bitter malice":"Ghost","blast burn":"Fire","blaze kick":"Fire","blizzard":"Ice","block":"Normal","body press":"Fighting","body slam":"Normal","bone rush":"Ground","boomburst":"Normal","bounce":"Flying","brave bird":"Flying","breaking swipe":"Dragon","brick break":"Fighting","brutal swing":"Dark","bug bite":"Bug","bug buzz":"Bug","bulk up":"Fighting","bulldoze":"Ground","bullet punch":"Steel","bullet seed":"Grass","burn up":"Fire","burning jealousy":"Fire","calm mind":"Psychic","ceaseless edge":"Dark","charge":"Electric","charge beam":"Electric","charm":"Fairy","chilling water":"Water","chilly reception":"Ice","circle throw":"Fighting","clanging scales":"Dragon","clangorous soul":"Dragon","clear smog":"Poison","close combat":"Fighting","coaching":"Fighting","coil":"Poison","comeuppance":"Dark","confuse ray":"Ghost","copycat":"Normal","corrosive gas":"Poison","cosmic power":"Psychic","cotton guard":"Grass","cotton spore":"Grass","counter":"Fighting","covet":"Normal","crabhammer":"Water","cross chop":"Fighting","cross poison":"Poison","crunch":"Dark","crush claw":"Normal","curse":"Ghost","dark pulse":"Dark","darkest lariat":"Dark","dazzling gleam":"Fairy","decorate":"Fairy","defog":"Flying","destiny bond":"Ghost","detect":"Fighting","dig":"Ground","dire claw":"Poison","disable":"Normal","discharge":"Electric","dive":"Water","double hit":"Normal","double team":"Normal","double-edge":"Normal","draco meteor":"Dragon","dragon cheer":"Dragon","dragon claw":"Dragon","dragon dance":"Dragon","dragon darts":"Dragon","dragon pulse":"Dragon","dragon rush":"Dragon","dragon tail":"Dragon","drain punch":"Fighting","draining kiss":"Fairy","drill peck":"Flying","drill run":"Ground","dual wingbeat":"Flying","dynamic punch":"Fighting","earth power":"Ground","earthquake":"Ground","eerie impulse":"Electric","eerie spell":"Psychic","electric terrain":"Electric","electrify":"Electric","electro ball":"Electric","electro shot":"Electric","electroweb":"Electric","encore":"Normal","endeavor":"Normal","endure":"Normal","energy ball":"Grass","entrainment":"Normal","eruption":"Fire","expanding force":"Psychic","explosion":"Normal","extrasensory":"Psychic","extreme speed":"Normal","facade":"Normal","fairy lock":"Fairy","fake out":"Normal","fake tears":"Dark","feather dance":"Flying","feint":"Normal","fell stinger":"Bug","fickle beam":"Dragon","fiery dance":"Fire","final gambit":"Fighting","fire blast":"Fire","fire fang":"Fire","fire lash":"Fire","fire punch":"Fire","fire spin":"Fire","first impression":"Bug","fissure":"Ground","flail":"Normal","flame charge":"Fire","flamethrower":"Fire","flare blitz":"Fire","flash cannon":"Steel","flatter":"Dark","fling":"Dark","flip turn":"Water","flower trick":"Grass","fly":"Flying","flying press":"Fighting","focus blast":"Fighting","focus energy":"Normal","focus punch":"Fighting","follow me":"Normal","forest's curse":"Grass","foul play":"Dark","freeze-dry":"Ice","frenzy plant":"Grass","frost breath":"Ice","future sight":"Psychic","gastro acid":"Poison","giga drain":"Grass","giga impact":"Normal","gigaton hammer":"Steel","glare":"Normal","grass knot":"Grass","grassy glide":"Grass","grassy terrain":"Grass","grav apple":"Grass","gravity":"Psychic","growth":"Normal","guard split":"Psychic","guard swap":"Psychic","guillotine":"Normal","gunk shot":"Poison","gyro ball":"Steel","hammer arm":"Fighting","hard press":"Steel","haze":"Ice","head smash":"Rock","headlong rush":"Ground","heal bell":"Normal","heal pulse":"Psychic","healing wish":"Psychic","heat crash":"Fire","heat wave":"Fire","heavy slam":"Steel","helping hand":"Normal","hex":"Ghost","high horsepower":"Ground","high jump kick":"Fighting","horn drill":"Normal","horn leech":"Grass","howl":"Normal","hurricane":"Flying","hydro cannon":"Water","hydro pump":"Water","hyper beam":"Normal","hyper voice":"Normal","hypnosis":"Psychic","ice beam":"Ice","ice fang":"Ice","ice hammer":"Ice","ice punch":"Ice","ice shard":"Ice","ice spinner":"Ice","icicle crash":"Ice","icicle spear":"Ice","icy wind":"Ice","imprison":"Psychic","infernal parade":"Ghost","inferno":"Fire","infestation":"Bug","ingrain":"Grass","instruct":"Psychic","iron defense":"Steel","iron head":"Steel","iron tail":"Steel","jet punch":"Water","king's shield":"Steel","knock off":"Dark","kowtow cleave":"Dark","lash out":"Dark","last resort":"Normal","last respects":"Ghost","lava plume":"Fire","leaf blade":"Grass","leaf storm":"Grass","leech life":"Bug","leech seed":"Grass","life dew":"Water","light screen":"Psychic","light of ruin":"Fairy","liquidation":"Water","lock-on":"Normal","low kick":"Fighting","low sweep":"Fighting","lumina crash":"Psychic","lunge":"Bug","mach punch":"Fighting","magic powder":"Psychic","magic room":"Psychic","magnet rise":"Electric","magnetic flux":"Electric","make it rain":"Steel","matcha gotcha":"Grass","mean look":"Normal","mega kick":"Normal","megahorn":"Bug","memento":"Dark","metal burst":"Steel","metal sound":"Steel","meteor beam":"Rock","meteor mash":"Steel","milk drink":"Normal","minimize":"Normal","mirror coat":"Psychic","misty explosion":"Fairy","misty terrain":"Fairy","moonblast":"Fairy","moonlight":"Fairy","morning sun":"Normal","mortal spin":"Poison","mountain gale":"Ice","mud shot":"Ground","mud-slap":"Ground","muddy water":"Water","mystical fire":"Fire","nasty plot":"Dark","night daze":"Dark","night shade":"Ghost","night slash":"Dark","no retreat":"Fighting","noble roar":"Normal","nuzzle":"Electric","outrage":"Dragon","overheat":"Fire","pain split":"Normal","parabolic charge":"Electric","parting shot":"Dark","payback":"Dark","perish song":"Normal","petal blizzard":"Grass","petal dance":"Grass","phantom force":"Ghost","pin missile":"Bug","play rough":"Fairy","pluck":"Flying","poison fang":"Poison","poison jab":"Poison","poison powder":"Poison","pollen puff":"Bug","poltergeist":"Ghost","population bomb":"Normal","pounce":"Bug","power gem":"Rock","power shift":"Normal","power split":"Psychic","power swap":"Psychic","power trick":"Psychic","power trip":"Dark","power whip":"Grass","protect":"Normal","psych up":"Normal","psychic":"Psychic","psychic fangs":"Psychic","psychic noise":"Psychic","psychic terrain":"Psychic","psycho cut":"Psychic","psyshield bash":"Psychic","psyshock":"Psychic","quash":"Dark","quick attack":"Normal","quick guard":"Fighting","quiver dance":"Bug","rage fist":"Ghost","rage powder":"Bug","raging bull":"Normal","raging fury":"Fire","rain dance":"Water","rapid spin":"Normal","razor shell":"Water","recover":"Normal","recycle":"Normal","reflect":"Psychic","reflect type":"Normal","rest":"Psychic","reversal":"Fighting","rising voltage":"Electric","roar":"Normal","rock blast":"Rock","rock polish":"Rock","rock slide":"Rock","rock tomb":"Rock","rock wrecker":"Rock","role play":"Psychic","roost":"Flying","round":"Normal","sacred sword":"Fighting","safeguard":"Normal","salt cure":"Rock","sand tomb":"Ground","sandstorm":"Rock","scald":"Water","scale shot":"Dragon","scary face":"Normal","scorching sands":"Ground","screech":"Normal","seed bomb":"Grass","seismic toss":"Fighting","self-destruct":"Normal","shadow ball":"Ghost","shadow claw":"Ghost","shadow punch":"Ghost","shadow sneak":"Ghost","shed tail":"Normal","sheer cold":"Ice","shell side arm":"Poison","shell smash":"Normal","shelter":"Steel","simple beam":"Normal","sing":"Normal","skill swap":"Psychic","skitter smack":"Bug","sky attack":"Flying","slack off":"Normal","sleep powder":"Grass","sleep talk":"Normal","sludge bomb":"Poison","sludge wave":"Poison","smack down":"Rock","smart strike":"Steel","snap trap":"Grass","snarl":"Dark","snore":"Normal","snowscape":"Ice","soak":"Water","soft-boiled":"Normal","solar beam":"Grass","solar blade":"Grass","sparkling aria":"Water","speed swap":"Psychic","spicy extract":"Grass","spikes":"Ground","spiky shield":"Grass","spirit break":"Fairy","spirit shackle":"Ghost","spit up":"Normal","spite":"Ghost","spore":"Grass","stealth rock":"Rock","steel beam":"Steel","steel roller":"Steel","steel wing":"Steel","sticky web":"Bug","stockpile":"Normal","stomping tantrum":"Ground","stone axe":"Rock","stone edge":"Rock","stored power":"Psychic","storm throw":"Fighting","strength sap":"Grass","string shot":"Bug","struggle":"Normal","struggle bug":"Bug","stuff cheeks":"Normal","stun spore":"Grass","substitute":"Normal","sucker punch":"Dark","sunny day":"Fire","super fang":"Normal","supercell slam":"Electric","superpower":"Fighting","surf":"Water","swagger":"Normal","swallow":"Normal","sweet kiss":"Fairy","sweet scent":"Normal","switcheroo":"Dark","swords dance":"Normal","synthesis":"Grass","syrup bomb":"Grass","tail slap":"Normal","tailwind":"Flying","taunt":"Dark","tearful look":"Normal","teatime":"Normal","teeter dance":"Normal","temper flare":"Fire","terrain pulse":"Normal","thief":"Dark","thrash":"Normal","throat chop":"Dark","thunder":"Electric","thunder fang":"Electric","thunder punch":"Electric","thunder wave":"Electric","thunderbolt":"Electric","tickle":"Normal","tidy up":"Normal","topsy-turvy":"Dark","torch song":"Fire","torment":"Dark","toxic":"Poison","toxic spikes":"Poison","toxic thread":"Poison","trailblaze":"Grass","transform":"Normal","tri attack":"Normal","trick":"Psychic","trick room":"Psychic","trick-or-treat":"Ghost","triple arrows":"Fighting","triple axel":"Ice","trop kick":"Grass","twin beam":"Psychic","u-turn":"Bug","upper hand":"Fighting","uproar":"Normal","vacuum wave":"Fighting","venoshock":"Poison","volt switch":"Electric","volt tackle":"Electric","water pulse":"Water","water shuriken":"Water","water spout":"Water","waterfall":"Water","wave crash":"Water","weather ball":"Normal","whirlpool":"Water","whirlwind":"Normal","wide guard":"Rock","wild charge":"Electric","will-o-wisp":"Fire","wish":"Normal","wonder room":"Psychic","wood hammer":"Grass","worry seed":"Grass","wrap":"Normal","x-scissor":"Bug","yawn":"Normal","zap cannon":"Electric","zen headbutt":"Psychic"};
 
 const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vROaw4KJiBYq7UVWYKAC2A0ArKdLolKGr-LmtG-xboOxGnumsZCMdMpRB6okAL1NzFgmboxlAmZEi4m/pub?gid=96125147&single=true&output=csv";
+const MYTEAM_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vROaw4KJiBYq7UVWYKAC2A0ArKdLolKGr-LmtG-xboOxGnumsZCMdMpRB6okAL1NzFgmboxlAmZEi4m/pub?gid=1187060331&single=true&output=csv";
 
 /* ---- Type system ---- */
 const TYPE_COLORS={Normal:"#9099a1",Fire:"#ff6b3d",Water:"#4d90d5",Electric:"#f4c430",Grass:"#63bc5a",Ice:"#74cec0",Fighting:"#ce4069",Poison:"#ab6ac8",Ground:"#d97845",Flying:"#8fa9de",Psychic:"#f97176",Bug:"#90c12c",Rock:"#c7b78b",Ghost:"#5269ac",Dragon:"#0b6dc3",Dark:"#5a5366",Steel:"#5a8ea1",Fairy:"#ec8fe6"};
@@ -224,6 +280,52 @@ function moveType(name){
   return MOVE_TYPES[k]||null;
 }
 
+/* ---- Priority moves (auto-detect) ---- */
+const PRIO_DMG={"fake out":3,"extreme speed":2,"first impression":2,"upper hand":3,"sucker punch":1,"grassy glide":1,"quick attack":1,"aqua jet":1,"bullet punch":1,"ice shard":1,"mach punch":1,"shadow sneak":1,"vacuum wave":1,"water shuriken":1,"accelerock":1,"jet punch":1};
+const PRIO_SUP={"follow me":2,"rage powder":2,"ally switch":2,"protect":4,"detect":4,"spiky shield":4,"baneful bunker":4,"king's shield":4,"quick guard":3,"wide guard":3,"helping hand":5,"endure":4,"feint":2,"baby-doll eyes":1};
+function movePrio(name){
+  const k=name.trim().toLowerCase().replace(/\s*\(\d+%\)\s*$/,'');
+  if(PRIO_DMG[k]!==undefined)return{kind:'dmg',lvl:PRIO_DMG[k],name:name.replace(/\s*\(\d+%\)\s*$/,'')};
+  if(PRIO_SUP[k]!==undefined)return{kind:'sup',lvl:PRIO_SUP[k],name:name.replace(/\s*\(\d+%\)\s*$/,'')};
+  return null;
+}
+function priorityOf(p){
+  const found=[];
+  (p.moves||[]).forEach(m=>{const pr=movePrio(m);if(pr)found.push(pr);});
+  return found;
+}
+
+/* ---- Champions speed formula (Level 50, IV=31 fixed) ----
+   core = floor((2*Base + 31) * 50/100) + 5
+   final = floor((core + SpeedSP) * natureMod)
+   Validated against GameWith Champions speed table (Max/Pos/0AP columns exact). */
+function speedCore(base){return Math.floor((2*base+31)*50/100)+5;}
+function natureSpeedMod(natures){
+  // read first-listed nature; +Spe alignments =1.1, -Spe =0.9, else 1.0
+  const n=(natures&&natures[0]||'').toLowerCase();
+  const plus=['jolly','timid','naive','hasty'];   // raise Speed
+  const minus=['brave','quiet','relaxed','sassy']; // lower Speed
+  if(plus.some(x=>n.includes(x)))return 1.1;
+  if(minus.some(x=>n.includes(x)))return 0.9;
+  return 1.0;
+}
+function parseSpeeds(p){
+  // Base Speed cell like "102" or "102 (92)" -> {base:102, mega:92|null}
+  const nums=(p.speed||'').match(/\d+/g);
+  if(!nums||!nums.length)return{base:null,mega:null};
+  return{base:parseInt(nums[0],10), mega:nums.length>1?parseInt(nums[1],10):null};
+}
+function hasMega(p){return parseSpeeds(p).mega!==null;}
+function computeSpeed(p,useMega){
+  const sp=parseSpeeds(p);
+  let base=sp.base;
+  if(useMega&&sp.mega!==null)base=sp.mega;
+  if(!base)return null;
+  const spv=Math.max(0,Math.min(32,parseInt(p.speedSP||'0',10)||0));
+  const mod=natureSpeedMod(p.natures);
+  return Math.floor((speedCore(base)+spv)*mod);
+}
+
 /* ---- CSV parse ---- */
 function parseCSV(text){
   const rows=[];let i=0,f='',row=[],q=false;
@@ -243,6 +345,8 @@ function toObjects(rows){
   const iName=idx("pokemon"),iType=idx("type"),iAbil=idx("ability"),iMoves=idx("moves"),
     iItems=idx("held items"),iNat=idx("nature"),iIV=idx("ivs"),iSpd=idx("base speed"),
     iLook=idx("look out for"),iNotes=idx("notes");
+  // Speed SP column: accept a few header spellings
+  const iSP=[ "speed sp","speedsp","spe sp","speed sp (0-32)","sp speed" ].map(idx).find(x=>x>=0);
   const out=[];
   for(let r=1;r<rows.length;r++){
     const c=rows[r];if(!c)continue;
@@ -258,6 +362,7 @@ function toObjects(rows){
       natures:splitList(c[iNat]),
       ivs:(c[iIV]||"").trim(),
       speed:(c[iSpd]||"").trim(),
+      speedSP:(iSP!==undefined&&iSP>=0?(c[iSP]||"").trim():""),
       lookout:(c[iLook]||"").trim(),
       notes:(c[iNotes]||"").trim()
     });
@@ -266,9 +371,15 @@ function toObjects(rows){
 }
 
 /* ---- State ---- */
-let DEX=[];      // array of pokemon objects
+let DEX=[];      // array of pokemon objects (opponent meta db)
 let DEXMAP={};   // lowername -> obj
+let MYTEAM=[];   // my fixed team (from MyTeam tab)
 const SLOTS={ally:new Array(6).fill(null),active:new Array(2).fill(null),bench:new Array(4).fill(null)};
+// field modifiers + per-slot scarf/paralysis (keyed by kind:idx)
+const FIELD={tr:false,'tw-ally':false,'tw-enemy':false};
+const SCARF={}; // key "kind:idx" -> bool
+const PARA={};  // key "kind:idx" -> bool
+const MEGA={};  // key "kind:idx" -> bool (mega evolved)
 
 /* ---- Rendering helpers ---- */
 function chip(t){return `<span class="chip" style="background:${TYPE_COLORS[t]}">${t}</span>`;}
@@ -328,8 +439,9 @@ function cardBodyEnemy(p){
   h+='</div>';
   return h;
 }
-function cardBodyAlly(p){
-  let h=`<div class="pkm-head"><div class="pkm-name">${p.name}<span class="clear" data-clear="1">&times;</span></div>${typeChips(p.types)}</div>`;
+function cardBodyAlly(p,fixed){
+  const clearBtn=fixed?'':'<span class="clear" data-clear="1">&times;</span>';
+  let h=`<div class="pkm-head"><div class="pkm-name">${p.name}${clearBtn}</div>${typeChips(p.types)}</div>`;
   h+=weakHTML(p.types);
   h+=movesHTML(p.moves);
   h+='<div class="metatop">';
@@ -385,20 +497,113 @@ function fill(card,kind,p){
   const body=card.querySelector('.pkm');
   body.innerHTML=kind==='ally'?cardBodyAlly(p):kind==='bench'?cardBodyBench(p):cardBodyEnemy(p);
   card.classList.add('filled');
+  renderLadder();
 }
-function unfill(card){card.classList.remove('filled');card.querySelector('.pkm').innerHTML='';const i=card.querySelector('input');i.value='';}
+function unfill(card){card.classList.remove('filled');card.querySelector('.pkm').innerHTML='';const i=card.querySelector('input');i.value='';
+  const k=card.dataset.kind+':'+card.dataset.idx;delete SCARF[k];delete PARA[k];delete MEGA[k];
+  renderLadder();}
+
+/* ---- Speed Ladder ---- */
+function sideOf(kind){return kind==='ally'?'ally':'enemy';}
+function renderLadder(){
+  const box=document.getElementById('ladder');
+  const note=document.getElementById('ladderNote');
+  // gather every filled slot that has a computable speed
+  const entries=[];
+  const pushEntry=(p,kind,idx)=>{
+    const key=kind+':'+idx;
+    const canMega=hasMega(p);
+    const isMega=canMega&&!!MEGA[key];
+    const base=computeSpeed(p,isMega);if(base===null)return;
+    const side=sideOf(kind);
+    let spd=base;
+    if(SCARF[key])spd=Math.floor(spd*1.5);
+    if((side==='ally'&&FIELD['tw-ally'])||(side==='enemy'&&FIELD['tw-enemy']))spd=Math.floor(spd*2);
+    if(PARA[key])spd=Math.floor(spd*0.5);
+    entries.push({p,kind,idx,key,side,base,spd,canMega,isMega,prio:priorityOf(p)});
+  };
+  // ally side: fixed MyTeam
+  MYTEAM.forEach((p,idx)=>pushEntry(p,'ally',idx));
+  // opponent side: filled search slots
+  ['active','bench'].forEach(kind=>{
+    SLOTS[kind].forEach((nm,idx)=>{
+      if(!nm)return;const p=DEXMAP[nm.toLowerCase()];if(!p)return;
+      pushEntry(p,kind,idx);
+    });
+  });
+  if(!entries.length){box.innerHTML='<div class="ladder-empty">Fill in Pok&eacute;mon to see the speed order.</div>';note.innerHTML='';return;}
+  // sort: Trick Room inverts (slowest first)
+  entries.sort((a,b)=> FIELD.tr ? a.spd-b.spd : b.spd-a.spd);
+  box.innerHTML=entries.map((e,i)=>{
+    const dmgP=e.prio.filter(x=>x.kind==='dmg');
+    const supP=e.prio.filter(x=>x.kind==='sup');
+    const badges=[
+      ...dmgP.map(x=>`<span class="pbadge dmg" title="Priority +${x.lvl} damaging move">&#9889; ${x.name}</span>`),
+      ...supP.slice(0,2).map(x=>`<span class="pbadge sup" title="Priority +${x.lvl} support move">${x.name}</span>`)
+    ].join('');
+    const scarfOn=SCARF[e.key]?' on':'';
+    const parOn=PARA[e.key]?' on':'';
+    const megaOn=e.isMega?' on':'';
+    const sub=[];
+    if(e.isMega)sub.push('Mega');
+    if(SCARF[e.key])sub.push('Scarf');
+    if((e.side==='ally'&&FIELD['tw-ally'])||(e.side==='enemy'&&FIELD['tw-enemy']))sub.push('Tailwind');
+    if(PARA[e.key])sub.push('Para');
+    const subtxt=sub.length?`<span class="lad-sub">${sub.join(' + ')}</span>`:`<span class="lad-sub">${e.side==='ally'?'You':'Opp'}</span>`;
+    const megaBtn=e.canMega?`<span class="lad-mega${megaOn}" data-mega="${e.key}" title="Toggle Mega Evolution speed">Mega</span>`:'';
+    return `<div class="lad-row ${e.side}">
+      <div class="lad-rank">${i+1}</div>
+      <div class="lad-main">
+        <span class="lad-name">${e.p.name}${e.isMega?' <span style="color:var(--gold);font-size:12px">&#9733;</span>':''}</span>
+        <span class="lad-badges">${badges}</span>
+      </div>
+      <div class="lad-spd">
+        <div class="lad-tools">
+          ${megaBtn}
+          <span class="lad-scarf${scarfOn}" data-scarf="${e.key}" title="Toggle Choice Scarf (x1.5)">Scarf</span>
+          <span class="lad-par${parOn}" data-par="${e.key}" title="Toggle Paralysis (x0.5)">Par</span>
+        </div>
+        <span class="lad-num">${e.spd}</span>
+        ${subtxt}
+      </div>
+    </div>`;
+  }).join('');
+  const trTxt=FIELD.tr?'<b style="color:var(--gold)">Trick Room active</b> \u2014 slowest moves first. ':'';
+  note.innerHTML=`${trTxt}Speeds computed at Lv50 with each Pok&eacute;mon's Speed SP and nature from your sheet. &#9889; = damaging priority move (ignores speed order). Tap Scarf/Par on any row for one-off modifiers.`;
+  // wire per-row toggles
+  box.querySelectorAll('[data-scarf]').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.scarf;SCARF[k]=!SCARF[k];renderLadder();}));
+  box.querySelectorAll('[data-par]').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.par;PARA[k]=!PARA[k];renderLadder();}));
+  box.querySelectorAll('[data-mega]').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.mega;MEGA[k]=!MEGA[k];renderLadder();}));
+}
 
 /* ---- Build UI ---- */
 function build(){
-  const ag=document.getElementById('allyGrid');
-  for(let i=0;i<6;i++)ag.appendChild(makeSlot('ally',i,'ally',`Ally ${i+1}`));
+  // Ally side is now fixed cards from MyTeam (rendered by renderMyTeam), no search slots.
   const acg=document.getElementById('activeGrid');
   for(let i=0;i<2;i++)acg.appendChild(makeSlot('active',i,'enemy',`Active ${i+1}`));
   const bg=document.getElementById('benchGrid');
   for(let i=0;i<4;i++)bg.appendChild(makeSlot('bench',i,'enemy',`Bench ${i+1}`));
 }
+function renderMyTeam(){
+  const ag=document.getElementById('allyGrid');
+  ag.innerHTML='';
+  if(!MYTEAM.length){
+    ag.innerHTML='<div class="ladder-empty" style="grid-column:1/-1">Your MyTeam tab is empty or still loading.</div>';
+    return;
+  }
+  MYTEAM.forEach((p,i)=>{
+    const card=document.createElement('div');
+    card.className='card ally big filled fixed';
+    card.dataset.kind='ally';card.dataset.idx=i;
+    const body=document.createElement('div');
+    body.className='pkm';
+    body.innerHTML=cardBodyAlly(p,true); // true = fixed (no clear button)
+    card.appendChild(body);
+    ag.appendChild(card);
+  });
+}
 function restoreSlots(){
-  ['ally','active','bench'].forEach(kind=>{
+  ['active','bench'].forEach(kind=>{
     SLOTS[kind].forEach((nm,idx)=>{
       if(!nm)return;const p=DEXMAP[nm.toLowerCase()];if(!p)return;
       const card=document.querySelector(`.card[data-kind="${kind}"][data-idx="${idx}"]`);
@@ -413,49 +618,62 @@ function setSync(state,txt){
   dot.className='dot'+(state==='live'?' live':state==='err'?' err':'');
   t.textContent=txt;
 }
+async function fetchCSV(url){
+  const res=await fetch(url+((url.includes('?')?'&':'?')+'_cb='+Date.now()));
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  return toObjects(parseCSV(await res.text()));
+}
 async function load(){
   setSync('','connecting');
+  // opponent meta db
   try{
-    const res=await fetch(CSV_URL+((CSV_URL.includes('?')?'&':'?')+'_cb='+Date.now()));
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const txt=await res.text();
-    DEX=toObjects(parseCSV(txt));
+    DEX=await fetchCSV(CSV_URL);
     DEXMAP={};DEX.forEach(p=>DEXMAP[p.name.toLowerCase()]=p);
     setSync('live',DEX.length+' Pok&eacute;mon live');
     document.getElementById('syncTxt').innerHTML=DEX.length+' Pok&eacute;mon live';
-    document.getElementById('countTxt').textContent=DEX.length+' entries loaded';
+    document.getElementById('countTxt').textContent=DEX.length+' opponents loaded';
     restoreSlots();
   }catch(err){
     setSync('err','sheet unreachable');
     document.getElementById('countTxt').textContent='Load error: '+err.message;
     console.error(err);
   }
+  // my fixed team
+  try{
+    MYTEAM=await fetchCSV(MYTEAM_URL);
+    renderMyTeam();
+    renderLadder();
+  }catch(err){
+    document.getElementById('allyGrid').innerHTML='<div class="ladder-empty" style="grid-column:1/-1">MyTeam tab unreachable \u2014 check it\'s published.</div>';
+    console.error('MyTeam load error',err);
+  }
   document.getElementById('veil').classList.add('gone');
 }
 
 /* ---- Save / Load team codes ---- */
-document.getElementById('saveBtn').addEventListener('click',()=>{
-  const code=btoa(unescape(encodeURIComponent(JSON.stringify(SLOTS))));
-  navigator.clipboard.writeText(code).then(()=>{
-    prompt('Team code copied. Paste this anywhere to save it, or use Load Team later:',code);
-  }).catch(()=>prompt('Copy this team code:',code));
-});
-document.getElementById('loadBtn').addEventListener('click',()=>{
-  const code=prompt('Paste your team code:');
-  if(!code)return;
-  try{
-    const data=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
-    ['ally','active','bench'].forEach(k=>{if(data[k])SLOTS[k]=data[k];});
-    document.querySelectorAll('.card').forEach(c=>unfill(c));
-    restoreSlots();
-  }catch(e){alert('That code could not be read.');}
-});
+document.getElementById('refreshBtn').addEventListener('click',()=>{load();});
 document.getElementById('resetBtn').addEventListener('click',()=>{
   SLOTS.active=new Array(2).fill(null);SLOTS.bench=new Array(4).fill(null);
+  // clear opponent scarf/para state
+  Object.keys(SCARF).forEach(k=>{if(k.startsWith('active:')||k.startsWith('bench:'))delete SCARF[k];});
+  Object.keys(PARA).forEach(k=>{if(k.startsWith('active:')||k.startsWith('bench:'))delete PARA[k];});
+  Object.keys(MEGA).forEach(k=>{if(k.startsWith('active:')||k.startsWith('bench:'))delete MEGA[k];});
+  FIELD['tw-enemy']=false;
   document.querySelectorAll('.card[data-kind="active"],.card[data-kind="bench"]').forEach(c=>unfill(c));
+  syncModBtns();renderLadder();
 });
 
-build();load();
+/* field modifier toggle buttons */
+function syncModBtns(){
+  document.querySelectorAll('.modbtn').forEach(b=>{
+    b.classList.toggle('on',!!FIELD[b.dataset.mod]);
+  });
+}
+document.querySelectorAll('.modbtn').forEach(b=>{
+  b.addEventListener('click',()=>{const m=b.dataset.mod;FIELD[m]=!FIELD[m];syncModBtns();renderLadder();});
+});
+
+build();load();renderLadder();
 </script>
 </body>
 </html>
