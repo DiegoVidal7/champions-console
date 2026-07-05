@@ -89,6 +89,10 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .modbtn.on{background:var(--gold);border-color:var(--gold);color:#1a1205}
 .modbtn.scope{border-color:rgba(134,149,168,.4);color:var(--ink-dim)}
 .modbtn.scope.on{background:#2a3444;border-color:var(--ink-dim);color:var(--ink)}
+.modbtn.weather.on[data-weather="rain"]{background:#4d90d5;border-color:#4d90d5;color:#fff}
+.modbtn.weather.on[data-weather="sun"]{background:#f0a830;border-color:#f0a830;color:#1a1205}
+.modbtn.weather.on[data-weather="sand"]{background:#c7b78b;border-color:#c7b78b;color:#1a1205}
+.modbtn.weather.on[data-weather="snow"]{background:#a8d8e0;border-color:#a8d8e0;color:#0a1520}
 .modbtn.side-ally.on{background:var(--ally);border-color:var(--ally);color:#fff}
 .modbtn.side-enemy.on{background:var(--enemy);border-color:var(--enemy);color:#fff}
 .modsep{width:1px;height:20px;background:var(--edge)}
@@ -263,6 +267,11 @@ a.link{color:var(--gold);text-decoration:none}
       <span class="modsep"></span>
       <button class="modbtn side-ally" data-mod="tw-ally" title="Tailwind on your side">Tailwind &middot; You</button>
       <button class="modbtn side-enemy" data-mod="tw-enemy" title="Tailwind on opponent side">Tailwind &middot; Opp</button>
+      <span class="modsep"></span>
+      <button class="modbtn weather" data-weather="rain" title="Rain \u2014 doubles Swift Swim Speed">Rain</button>
+      <button class="modbtn weather" data-weather="sun" title="Sun \u2014 doubles Chlorophyll Speed">Sun</button>
+      <button class="modbtn weather" data-weather="sand" title="Sand \u2014 doubles Sand Rush Speed">Sand</button>
+      <button class="modbtn weather" data-weather="snow" title="Snow \u2014 doubles Slush Rush Speed">Snow</button>
     </div>
   </div>
   <div id="ladder" class="ladder"></div>
@@ -369,6 +378,13 @@ function priorityOf(p){
    core = floor((2*Base + 31) * 50/100) + 5
    final = floor((core + SpeedSP) * natureMod)
    Validated against GameWith Champions speed table (Max/Pos/0AP columns exact). */
+/* ---- Weather speed abilities ---- */
+const WEATHER_ABILITY={ 'swift swim':'rain', 'chlorophyll':'sun', 'sand rush':'sand', 'slush rush':'snow' };
+function weatherSpeedAbility(p){
+  const a=(p.ability||'').toLowerCase();
+  for(const key in WEATHER_ABILITY){ if(a.includes(key))return WEATHER_ABILITY[key]; }
+  return null;
+}
 function speedCore(base){return Math.floor((2*base+31)*50/100)+5;}
 function natureSpeedMod(natures){
   // read first-listed nature; +Spe alignments =1.1, -Spe =0.9, else 1.0
@@ -446,7 +462,7 @@ let DEXMAP={};   // lowername -> obj
 let MYTEAM=[];   // my fixed team (from MyTeam tab)
 const SLOTS={ally:new Array(6).fill(null),active:new Array(2).fill(null),bench:new Array(4).fill(null)};
 // field modifiers + per-slot scarf/paralysis (keyed by kind:idx)
-const FIELD={tr:false,'tw-ally':false,'tw-enemy':false,showall:false};
+const FIELD={tr:false,'tw-ally':false,'tw-enemy':false,showall:false,weather:''};// weather: '' | 'rain' | 'sun' | 'sand' | 'snow'
 const SCARF={}; // key "kind:idx" -> bool
 const PARA={};  // key "kind:idx" -> bool
 const MEGA={};  // key "kind:idx" -> bool (mega evolved)
@@ -640,9 +656,13 @@ function renderLadder(){
     const side=sideOf(kind);
     let spd=base;
     if(SCARF[key])spd=Math.floor(spd*1.5);
+    // weather speed ability (Swift Swim etc.) doubles when its weather is active
+    const wAbility=weatherSpeedAbility(p);
+    const weatherBoost=(wAbility && FIELD.weather===wAbility);
+    if(weatherBoost)spd=Math.floor(spd*2);
     if((side==='ally'&&FIELD['tw-ally'])||(side==='enemy'&&FIELD['tw-enemy']))spd=Math.floor(spd*2);
     if(PARA[key])spd=Math.floor(spd*0.5);
-    entries.push({p,kind,idx,key,side,base,spd,canMega,isMega,prio:priorityOf(p)});
+    entries.push({p,kind,idx,key,side,base,spd,canMega,isMega,weatherBoost,prio:priorityOf(p)});
   };
   // ally side: fixed MyTeam (active-only unless Show All)
   MYTEAM.forEach((p,idx)=>{
@@ -675,6 +695,7 @@ function renderLadder(){
     const megaOn=e.isMega?' on':'';
     const sub=[];
     if(e.isMega)sub.push('Mega');
+    if(e.weatherBoost)sub.push(FIELD.weather.charAt(0).toUpperCase()+FIELD.weather.slice(1)+' x2');
     if(SCARF[e.key])sub.push('Scarf');
     if((e.side==='ally'&&FIELD['tw-ally'])||(e.side==='enemy'&&FIELD['tw-enemy']))sub.push('Tailwind');
     if(PARA[e.key])sub.push('Para');
@@ -803,18 +824,29 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
   Object.keys(PARA).forEach(k=>{if(k.startsWith('active:')||k.startsWith('bench:'))delete PARA[k];});
   Object.keys(MEGA).forEach(k=>{if(k.startsWith('active:')||k.startsWith('bench:'))delete MEGA[k];});
   FIELD['tw-enemy']=false;
+  FIELD.weather='';
   document.querySelectorAll('.card[data-kind="active"],.card[data-kind="bench"]').forEach(c=>unfill(c));
   syncModBtns();renderLadder();
 });
 
 /* field modifier toggle buttons */
 function syncModBtns(){
-  document.querySelectorAll('.modbtn').forEach(b=>{
+  document.querySelectorAll('.modbtn[data-mod]').forEach(b=>{
     b.classList.toggle('on',!!FIELD[b.dataset.mod]);
   });
+  document.querySelectorAll('.modbtn[data-weather]').forEach(b=>{
+    b.classList.toggle('on',FIELD.weather===b.dataset.weather);
+  });
 }
-document.querySelectorAll('.modbtn').forEach(b=>{
+document.querySelectorAll('.modbtn[data-mod]').forEach(b=>{
   b.addEventListener('click',()=>{const m=b.dataset.mod;FIELD[m]=!FIELD[m];syncModBtns();renderLadder();});
+});
+document.querySelectorAll('.modbtn[data-weather]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const w=b.dataset.weather;
+    FIELD.weather=(FIELD.weather===w)?'':w; // tap active weather again to clear
+    syncModBtns();renderLadder();
+  });
 });
 
 build();load();renderLadder();
