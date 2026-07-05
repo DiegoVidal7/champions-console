@@ -107,6 +107,10 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .pbadge{font-family:var(--font-display);font-weight:600;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:4px}
 .pbadge.dmg{background:rgba(230,180,80,.16);color:var(--gold);border:1px solid rgba(230,180,80,.4)}
 .pbadge.sup{background:rgba(134,149,168,.12);color:var(--ink-dim);border:1px solid var(--edge)}
+.pbadge.tie{background:rgba(240,168,48,.18);color:#f0a830;border:1px solid rgba(240,168,48,.5)}
+.lad-row.tie{border-color:rgba(240,168,48,.35)}
+.lad-row.tie .lad-num{color:#f0a830}
+.lad-row.tie::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:repeating-linear-gradient(0deg,#f0a830 0 4px,transparent 4px 8px)}
 .lad-spd{display:flex;align-items:baseline;gap:7px}
 .lad-num{font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--ink)}
 .lad-row.ally .lad-num{color:#7fb3f5}
@@ -683,13 +687,18 @@ function renderLadder(){
   }
   // sort: Trick Room inverts (slowest first)
   entries.sort((a,b)=> FIELD.tr ? a.spd-b.spd : b.spd-a.spd);
+  // detect speed ties (2+ mons sharing the exact same final speed)
+  const speedCounts={};
+  entries.forEach(e=>{speedCounts[e.spd]=(speedCounts[e.spd]||0)+1;});
   box.innerHTML=entries.map((e,i)=>{
+    const isTie=speedCounts[e.spd]>1;
     const dmgP=e.prio.filter(x=>x.kind==='dmg');
     const supP=e.prio.filter(x=>x.kind==='sup');
     const badges=[
+      isTie?`<span class="pbadge tie" title="Speed tie \u2014 50/50 who moves first">&#8646; Tie</span>`:'',
       ...dmgP.map(x=>`<span class="pbadge dmg" title="Priority +${x.lvl} damaging move">&#9889; ${x.name}</span>`),
       ...supP.slice(0,2).map(x=>`<span class="pbadge sup" title="Priority +${x.lvl} support move">${x.name}</span>`)
-    ].join('');
+    ].filter(Boolean).join('');
     const scarfOn=SCARF[e.key]?' on':'';
     const parOn=PARA[e.key]?' on':'';
     const megaOn=e.isMega?' on':'';
@@ -701,7 +710,7 @@ function renderLadder(){
     if(PARA[e.key])sub.push('Para');
     const subtxt=sub.length?`<span class="lad-sub">${sub.join(' + ')}</span>`:`<span class="lad-sub">${e.side==='ally'?'You':'Opp'}</span>`;
     const megaBtn=e.canMega?`<span class="lad-mega${megaOn}" data-mega="${e.key}" title="Toggle Mega Evolution speed">Mega</span>`:'';
-    return `<div class="lad-row ${e.side}">
+    return `<div class="lad-row ${e.side}${isTie?' tie':''}">
       <div class="lad-rank">${i+1}</div>
       <div class="lad-main">
         <span class="lad-name">${e.p.name}${e.isMega?' <span style="color:var(--gold);font-size:12px">&#9733;</span>':''}</span>
