@@ -161,8 +161,18 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 
 /* my-active selection highlight */
 .card.ally{cursor:pointer;transition:.15s}
+.card.ally.collapsed .pkm-head{margin-bottom:0;border-bottom:none;padding-bottom:10px}
 .card.ally.myactive{box-shadow:0 0 0 2px var(--ally),0 8px 30px -10px var(--ally-glow)}
-.card.ally.myactive::before{content:"ACTIVE";position:absolute;top:8px;right:10px;z-index:5;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:.14em;color:#fff;background:var(--ally);padding:2px 7px;border-radius:4px}
+.card.ally .pkm{padding-bottom:12px}
+.caret{font-size:11px;color:var(--ink-faint);margin-left:4px;transition:transform .15s;display:inline-block}
+.caret.open{transform:rotate(180deg)}
+.ally-compact{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 0 2px}
+.ac-speed{display:flex;align-items:baseline;gap:6px}
+.ac-k{font-family:var(--font-display);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+.act-btn{font-family:var(--font-display);font-weight:600;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:6px;border:1px solid var(--edge);background:var(--panel-2);color:var(--ink-dim);cursor:pointer;transition:.15s;user-select:none}
+.act-btn:hover{border-color:var(--ally);color:var(--ink)}
+.act-btn.on{background:var(--ally);border-color:var(--ally);color:#fff}
+.ally-details{margin-top:11px;border-top:1px solid var(--edge);padding-top:11px}
 
 /* threat section on opponent active cards */
 .threats{margin-top:11px;border-top:1px solid var(--edge);padding-top:9px}
@@ -472,6 +482,7 @@ const SCARF={}; // key "kind:idx" -> bool
 const PARA={};  // key "kind:idx" -> bool
 const MEGA={};  // key "kind:idx" -> bool (mega evolved)
 let MYACTIVE=[]; // indices (into MYTEAM) of my currently-active mons, max 2
+let MYEXPANDED=[]; // indices of team cards showing full details (collapsed by default)
 
 /* ---- Rendering helpers ---- */
 function chip(t){return `<span class="chip" style="background:${TYPE_COLORS[t]}">${t}</span>`;}
@@ -545,16 +556,27 @@ function cardBodyEnemy(p){
   h+='</div>';
   return h;
 }
-function cardBodyAlly(p,fixed){
-  const clearBtn=fixed?'':'<span class="clear" data-clear="1">&times;</span>';
+function cardBodyAlly(p,fixed,expanded,idx){
   const sprite=spriteImg(p.name);
-  let h=`<div class="pkm-head"><div class="pkm-name">${sprite}${p.name}${clearBtn}</div>${typeChips(p.types)}</div>`;
-  h+=weakHTML(p.types);
-  h+=movesHTML(p.moves);
-  h+='<div class="metatop">';
-  h+=`<div class="box"><div class="k">Base Speed</div><div class="v"><span class="speed-badge">${p.speed||'&mdash;'}</span></div></div>`;
-  h+=`<div class="box"><div class="k">Items</div><div class="v">${p.items.length?p.items.join(', '):'&mdash;'}</div></div>`;
-  h+='</div>';
+  const isActive=MYACTIVE.includes(idx);
+  const activeBtn=`<span class="act-btn${isActive?' on':''}" data-act="${idx}" title="Mark as active on the field">&#9876; ${isActive?'Active':'Bench'}</span>`;
+  const caret=`<span class="caret${expanded?' open':''}">&#9662;</span>`;
+  // header: sprite + name + types, always shown
+  let h=`<div class="pkm-head"><div class="pkm-name">${sprite}${p.name}${caret}</div>${typeChips(p.types)}</div>`;
+  // compact row: speed + active button, always shown
+  h+=`<div class="ally-compact"><span class="ac-speed"><span class="ac-k">SPD</span><span class="speed-badge">${p.speed||'&mdash;'}</span></span>${activeBtn}</div>`;
+  // expanded details
+  if(expanded){
+    h+='<div class="ally-details">';
+    h+=weakHTML(p.types);
+    h+=movesHTML(p.moves);
+    h+='<div class="metatop">';
+    h+=`<div class="box"><div class="k">Item</div><div class="v">${p.items.length?p.items.join(', '):'&mdash;'}</div></div>`;
+    h+=`<div class="box"><div class="k">Nature</div><div class="v">${p.natures.length?p.natures.join(' &middot; '):'&mdash;'}</div></div>`;
+    h+='</div>';
+    if(p.ability)h+=`<div class="metatop" style="grid-template-columns:1fr"><div class="box"><div class="k">Ability</div><div class="v">${p.ability}</div></div></div>`;
+    h+='</div>';
+  }
   return h;
 }
 function cardBodyBench(p){
@@ -755,16 +777,27 @@ function renderMyTeam(){
   MYTEAM.forEach((p,i)=>{
     const card=document.createElement('div');
     const activeCls=MYACTIVE.includes(i)?' myactive':'';
-    card.className='card ally big filled fixed'+activeCls;
+    const expanded=MYEXPANDED.includes(i);
+    const expCls=expanded?' expanded':' collapsed';
+    card.className='card ally fixed'+activeCls+expCls;
     card.dataset.kind='ally';card.dataset.idx=i;
     const body=document.createElement('div');
     body.className='pkm';
-    body.innerHTML=cardBodyAlly(p,true); // true = fixed (no clear button)
+    body.innerHTML=cardBodyAlly(p,true,expanded,i);
     card.appendChild(body);
-    // click-to-activate (ignore clicks on the sprite image drag etc.)
-    card.addEventListener('click',()=>toggleMyActive(i));
+    // click card = expand/collapse; click the active button = toggle active (handled via delegation)
+    card.addEventListener('click',(e)=>{
+      const actEl=e.target.closest('[data-act]');
+      if(actEl){e.stopPropagation();toggleMyActive(i);return;}
+      toggleExpand(i);
+    });
     ag.appendChild(card);
   });
+}
+function toggleExpand(i){
+  const at=MYEXPANDED.indexOf(i);
+  if(at>=0)MYEXPANDED.splice(at,1);else MYEXPANDED.push(i);
+  renderMyTeam();
 }
 function toggleMyActive(i){
   const at=MYACTIVE.indexOf(i);
