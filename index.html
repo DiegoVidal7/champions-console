@@ -775,7 +775,11 @@ function renderMyTeam(){
     ag.innerHTML='<div class="ladder-empty" style="grid-column:1/-1">Your MyTeam tab is empty or still loading.</div>';
     return;
   }
-  MYTEAM.forEach((p,i)=>{
+  // Display order: active mons first (in activation order), then the rest in original order.
+  const activeSet=new Set(MYACTIVE);
+  const order=[...MYACTIVE, ...MYTEAM.map((_,i)=>i).filter(i=>!activeSet.has(i))];
+  order.forEach(i=>{
+    const p=MYTEAM[i];
     const card=document.createElement('div');
     const activeCls=MYACTIVE.includes(i)?' myactive':'';
     const expanded=MYEXPANDED.includes(i);
