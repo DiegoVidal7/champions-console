@@ -103,7 +103,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .lad-rank{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink-faint);text-align:center}
 .lad-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .lad-name{font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:.02em}
-.mega-mark{vertical-align:middle;margin-left:2px;filter:drop-shadow(0 0 3px rgba(230,180,80,.5))}
+.mega-mark{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-left:4px;border-radius:50%;background:var(--gold);color:#1a1205;font-family:var(--font-display);font-weight:700;font-size:11px;line-height:1;vertical-align:middle;box-shadow:0 0 4px rgba(230,180,80,.5)}
 .lad-badges{display:flex;gap:5px;flex-wrap:wrap}
 .pbadge{font-family:var(--font-display);font-weight:600;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:4px}
 .pbadge.dmg{background:rgba(230,180,80,.16);color:var(--gold);border:1px solid rgba(230,180,80,.4)}
@@ -714,7 +714,7 @@ function renderLadder(){
     return `<div class="lad-row ${e.side}${isTie?' tie':''}">
       <div class="lad-rank">${i+1}</div>
       <div class="lad-main">
-        <span class="lad-name">${e.p.name}${e.isMega?' <svg class="mega-mark" viewBox="0 0 24 24" width="13" height="13" aria-label="Mega"><path d="M13 2 L6 13 L11 13 L9 22 L18 9 L12.5 9 Z" fill="var(--gold)"/></svg>':''}</span>
+        <span class="lad-name">${e.p.name}${e.isMega?' <span class="mega-mark" title="Mega Evolved">M</span>':''}</span>
         <span class="lad-badges">${badges}</span>
       </div>
       <div class="lad-spd">
