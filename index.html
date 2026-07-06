@@ -203,6 +203,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 .lookout{background:var(--enemy-glow);border:1px solid rgba(208,69,90,.35);border-radius:7px;padding:8px 11px;margin-top:11px}
 .lookout .lo-t{font-family:var(--font-display);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--enemy);font-weight:700;margin-bottom:2px}
 .lookout .lo-v{font-size:13.5px;font-weight:600;color:#ffd0d6;line-height:1.3}
+.notes-box{background:rgba(90,110,140,.14);border:1px solid rgba(120,140,170,.3);border-radius:7px;padding:8px 11px;margin-top:11px}
+.notes-box .nb-t{font-family:var(--font-display);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#8fa9c8;font-weight:700;margin-bottom:2px}
+.notes-box .nb-v{font-size:13px;color:#c9d6e6;line-height:1.35}
 
 .meta{display:grid;grid-template-columns:auto 1fr;gap:5px 8px;margin-top:11px;align-items:baseline}
 .meta .m{display:contents}
@@ -555,6 +558,7 @@ function cardBodyEnemy(p){
   if(p.ivs)h+=`<div class="m"><div class="k">IVs</div><div class="v">${p.ivs}</div></div>`;
   if(p.ability)h+=`<div class="m"><div class="k">Ability</div><div class="v">${p.ability}</div></div>`;
   h+='</div>';
+  if(p.notes)h+=`<div class="notes-box"><div class="nb-t">Notes</div><div class="nb-v">${p.notes}</div></div>`;
   return h;
 }
 function cardBodyAlly(p,fixed,expanded,idx){
