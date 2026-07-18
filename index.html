@@ -177,6 +177,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:20px;pa
 
 /* threat section on opponent active cards */
 .threats{margin-top:11px;border-top:1px solid var(--edge);padding-top:9px}
+.threats-slot:not(:empty){margin-bottom:2px}
+.base-spd{font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--gold)}
 .thr-head{font-family:var(--font-display);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:7px;font-weight:600}
 .thr-row{margin-bottom:7px}
 .thr-vs{font-family:var(--font-display);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;display:block;margin-bottom:4px}
@@ -547,19 +549,26 @@ function cardBodyEnemy(p){
   let h=`<div class="pkm-head"><div class="pkm-name">${p.name}<span class="clear" data-clear="1">&times;</span></div>${typeChips(p.types)}</div>`;
   if(p.lookout)h+=`<div class="lookout"><div class="lo-t">Look Out For</div><div class="lo-v">${p.lookout}</div></div>`;
   h+=movesHTML(p.moves);
-  // top row: speed + items side by side (most-glanced info)
-  h+='<div class="metatop">';
-  h+=`<div class="box"><div class="k">Base Speed</div><div class="v"><span class="speed-badge">${p.speed||'&mdash;'}</span></div></div>`;
-  h+=`<div class="box"><div class="k">Items</div><div class="v">${p.items.length?p.items.join(', '):'&mdash;'}</div></div>`;
-  h+='</div>';
-  // tight label|value grid for the rest
+  // Matchup slot lives here (populated by renderThreats)
+  h+='<div class="threats-slot"></div>';
+  // compact reference rows
   h+='<div class="meta">';
-  if(p.natures.length)h+=`<div class="m"><div class="k">Nature</div><div class="v">${p.natures.join(' &middot; ')}</div></div>`;
-  if(p.ivs)h+=`<div class="m"><div class="k">IVs</div><div class="v">${p.ivs}</div></div>`;
+  h+=`<div class="m"><div class="k">Speed</div><div class="v"><span class="base-spd">${p.speed||'&mdash;'}</span></div></div>`;
+  if(p.items.length)h+=`<div class="m"><div class="k">Items</div><div class="v">${p.items.join(', ')}</div></div>`;
+  if(p.natures.length)h+=`<div class="m"><div class="k">Nature</div><div class="v">${compactNatures(p.natures)}</div></div>`;
+  if(p.ivs)h+=`<div class="m"><div class="k">SP</div><div class="v">${p.ivs}</div></div>`;
   if(p.ability)h+=`<div class="m"><div class="k">Ability</div><div class="v">${p.ability}</div></div>`;
   h+='</div>';
   if(p.notes)h+=`<div class="notes-box"><div class="nb-t">Notes</div><div class="nb-v">${p.notes}</div></div>`;
   return h;
+}
+// "Modest (+SpA, -Atk) · Timid (+Spe, -Atk)" -> "Modest · Timid" with the spread as a tooltip
+function compactNatures(natures){
+  return natures.map(n=>{
+    const name=n.replace(/\s*\(.*?\)\s*/g,'').trim();
+    const spread=(n.match(/\((.*?)\)/)||[])[1]||'';
+    return spread?`<span title="${spread}">${name}</span>`:name;
+  }).join(' &middot; ');
 }
 function cardBodyAlly(p,fixed,expanded,idx){
   const sprite=spriteImg(p.name);
@@ -640,36 +649,30 @@ function unfill(card){card.classList.remove('filled');card.querySelector('.pkm')
 
 /* ---- Threat badges on opponent active cards ---- */
 function renderThreats(){
-  // clear existing threat sections on active cards
-  document.querySelectorAll('.card[data-kind="active"] .threats').forEach(el=>el.remove());
+  // clear existing threat content
+  document.querySelectorAll('.card[data-kind="active"] .threats-slot').forEach(el=>{el.innerHTML='';});
   const myMons=MYACTIVE.map(i=>MYTEAM[i]).filter(Boolean);
   [0,1].forEach(idx=>{
     const card=document.querySelector(`.card[data-kind="active"][data-idx="${idx}"]`);
     if(!card||!card.classList.contains('filled'))return;
+    const slot=card.querySelector('.threats-slot');
+    if(!slot)return;
     const nm=SLOTS.active[idx];const opp=nm?DEXMAP[nm.toLowerCase()]:null;
     if(!opp)return;
     if(!myMons.length)return; // nothing to compare until you mark active mons
     const rows=[];
     myMons.forEach(my=>{
-      // what OPP threatens on MY mon (defense read for me) and what MY mon does to OPP (offense)
       const oppHitsMy=attackReads(opp,my);     // opp attacking my mon
       const myHitsOpp=attackReads(my,opp);     // my mon attacking opp
       const parts=[];
-      // danger: opp super-effective on my mon
-      oppHitsMy.superEff.forEach(s=>parts.push(`<span class="thr danger" title="${opp.name}'s ${s.move} is ${s.mult}x on your ${my.name}">&#9888; ${s.move} ${s.mult}&times; \u2192 ${my.name}</span>`));
-      // my immunity vs opp
+      oppHitsMy.superEff.forEach(s=>parts.push(`<span class="thr danger" title="${opp.name}'s ${s.move} is ${s.mult}x on your ${my.name}">&#9888; ${s.move} ${s.mult}&times; &rarr; ${my.name}</span>`));
       oppHitsMy.immune.forEach(s=>parts.push(`<span class="thr immune" title="Your ${my.name} is immune to ${s.type}">&#128737; ${my.name} immune to ${s.move}</span>`));
-      // good: my mon super-effective on opp
       myHitsOpp.superEff.forEach(s=>parts.push(`<span class="thr good" title="Your ${my.name}'s ${s.move} is ${s.mult}x on ${opp.name}">&#9876; ${my.name}: ${s.move} ${s.mult}&times;</span>`));
-      // opp immune to my move
       myHitsOpp.immune.forEach(s=>parts.push(`<span class="thr oppimmune" title="${opp.name} is immune to your ${s.move}">${opp.name} immune to ${s.move}</span>`));
       if(parts.length)rows.push(`<div class="thr-row"><span class="thr-vs">vs ${my.name}</span><div class="thr-list">${parts.join('')}</div></div>`);
       else rows.push(`<div class="thr-row"><span class="thr-vs">vs ${my.name}</span><div class="thr-list"><span class="thr even">even matchup</span></div></div>`);
     });
-    const sec=document.createElement('div');
-    sec.className='threats';
-    sec.innerHTML=`<div class="thr-head">Matchup</div>${rows.join('')}`;
-    card.querySelector('.pkm').appendChild(sec);
+    slot.innerHTML=`<div class="threats"><div class="thr-head">Matchup</div>${rows.join('')}</div>`;
   });
 }
 
